@@ -1,8 +1,8 @@
-const games = require('../models/gamesSchema');
+const gamesSchema = require('../models/gamesSchema');
 
 const getGames = (request, response) => {
     console.log(request.url);
-    games.gamesCollection.find((error, game) => {
+    gamesSchema.gamesCollection.find((error, game) => {
         if(error){
             return response.status(500).send(error);
         } else {
@@ -13,7 +13,7 @@ const getGames = (request, response) => {
 
 const getGameById = (request, response) => {
     const idParam = request.params.id
-    games.gamesCollection.findById(idParam, (error, game) =>{
+    gamesSchema.gamesCollection.findById(idParam, (error, game) =>{
         if(error){
             return response.status(500).send(error);
         } else {
@@ -29,7 +29,7 @@ const getGameById = (request, response) => {
 const addGame = (request, response) => {
     console.log(request.url);
     const gameBody = request.body;
-    const game = new games.gamesCollection(gameBody);
+    const game = new gamesSchema.gamesCollection(gameBody);
 
     game.save((error) => {
         if(error){
@@ -46,12 +46,9 @@ const updateGame = (request, response) => {
     const gameBody = request.body;
     const novo = {new: true};
 
-    console.log(idParam)
-    console.log(gameBody)
-    console.log(novo)
-    games.gamesCollection.findByIdAndUpdate(
+    gamesSchema.gamesCollection.findByIdAndUpdate(
         idParam,
-        {$set:{gameBody}},
+        gameBody,
         novo,
         (error, game) => {
             if(error){
@@ -67,7 +64,7 @@ const updateGame = (request, response) => {
 
 const deleteGame = (request, response) => {
     const idParam = request.params.id;
-    games.gamesCollection.findByIdAndDelete(idParam, (error, game) => {
+    gamesSchema.gamesCollection.findByIdAndDelete(idParam, (error, game) => {
         if(error){
             return response.status(500).send(error);
         } else {
