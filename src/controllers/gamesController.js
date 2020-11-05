@@ -1,52 +1,89 @@
-const games = require('../models/games.json')
-
-
-const newGamesList = games.map(game => {
-    const newGame = {
-        id: game.id,
-        nome: game.name,
-        genero: game.genre,
-        plataformas: game.platforms,
-        capa: game.cover
-    }
-
-    return newGame
-})
+const games = require('../models/gamesSchema');
 
 const getGames = (request, response) => {
-    response.status(200).send(newGamesList)
+    console.log(request.url);
+    games.gamesCollection.find((error, game) => {
+        if(error){
+            return response.status(500).send(error);
+        } else {
+            return response.status(200).send(game);
+        }
+    })
 }
 
-const gamesList = games.map(game => {
-    const newGame = {
-        id: game.id,
-        nome: game.name,
-        genero: game.genre, 
-        plataformas: game.platforms,
-        data_lancamento: game.first_release_date,
-        slug: game.slug,
-        resumo: game.summary,
-        empresa: game.company,
-        capa: game.cover
-    }
+const getGameById = (request, response) => {
+    const idParam = request.params.id
+    games.gamesCollection.findById(idParam, (error, game) =>{
+        if(error){
+            return response.status(500).send(error);
+        } else {
+            if(game){
+                return response.status(200).send(game);
+            } else {
+                return response.status(404).send("Game not found! Please try again.");
+            }
+        }
+    })
+}
 
-    return newGame
+const addGame = (request, response) => {
+    console.log(request.url);
+    const gameBody = request.body;
+    const game = new games.gamesCollection(gameBody);
 
-})
+    game.save((error) => {
+        if(error){
+            return response.status(400).send(error);
+        } else {
+            return response.status(201).send(game)
+        }
+    })
+}
 
-const getGamesById = (request, response) => {
-    const id = request.params.id
-    const game = gamesList.find(game => game.id == id)
+//alterar update
+const updateGame = (request, response) => { 
+    const idParam = request.params.id;
+    const gameBody = request.body;
+    const novo = {new: true};
 
-    if(!game) {
-        response.status(404).send({message: 'Não foi possível encontrar o jogo.'})
-    } else {
-        response.status(200).send(game)
+    console.log(idParam)
+    console.log(gameBody)
+    console.log(novo)
+    games.gamesCollection.findByIdAndUpdate(
+        idParam,
+        {$set:{gameBody}},
+        novo,
+        (error, game) => {
+            if(error){
+                return response.status(500).send(error);
+            } else if (game) {
+                return response.status(200).send(game);
+            } else {
+                return response.sendStatus(404);
+            }
+        }
+    )
+} 
 
-    }
+const deleteGame = (request, response) => {
+    const idParam = request.params.id;
+    games.gamesCollection.findByIdAndDelete(idParam, (error, game) => {
+        if(error){
+            return response.status(500).send(error);
+        } else {
+            if(game){
+                return response.status(200).send("Game deleted.");
+            } else {
+                return response.sendStatus(404);
+            }
+        }
+    })
 }
 
 module.exports = {
     getGames,
-    getGamesById
+    getGameById,
+    addGame,
+    updateGame,
+    deleteGame
 }
